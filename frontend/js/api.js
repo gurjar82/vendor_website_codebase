@@ -1,4 +1,4 @@
-const API_BASE = "https://onrender.com/api";
+const API_BASE = "https://vendor-website-codebase.onrender.com/api";
 
 async function apiRequest(path, { method = "GET", body, token } = {}) {
   const headers = { "Content-Type": "application/json" };
