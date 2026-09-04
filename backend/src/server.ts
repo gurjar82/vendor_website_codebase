@@ -14,6 +14,7 @@ import bidRoutes from "./routes/bidRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
+import companyRoutes from "./routes/companyRoutes";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/bids", bidRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/companies", companyRoutes);
 
 // multer / generic error handler - keeps file-upload errors as clean JSON instead of a stack trace
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
