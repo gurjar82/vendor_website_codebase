@@ -1,19 +1,50 @@
-# Vendor Marketplace - POC
+# Vendor Marketplace - Tender Management Platform (v2)
 
-Manufacturing company ke liye vendor-matching platform ka proof of concept.
-Backend: Node.js + TypeScript + Express + MongoDB (Mongoose).
-Frontend: plain HTML/CSS/JS (koi build step nahi, seedha browser me chalta hai).
+Manufacturing company ke liye vendor/tender matching platform.
+Backend: Node.js + TypeScript + Express + MongoDB (Mongoose) + Multer (file uploads).
+Frontend: plain HTML/CSS/JS (no build step), extreme redesign with animations.
 
-Roles: Company, Vendor, Guest (read-only, no login), Admin (aap khud, seeded account).
+Roles: Company, Vendor, Guest (read-only), Admin (seeded account).
+Plus a new **Home** tab with hero banner and latest vendors/tenders showcase.
 
 ---
 
-## 1. Prerequisites (ek baar install karna hai)
+## What's new in v2 (upgrade from the original POC)
 
-1. **Node.js** (v18 ya usse upar) — https://nodejs.org se download karo
-2. **MongoDB** — do options hain:
-   - **Local**: MongoDB Community Server install karo (https://www.mongodb.com/try/download/community) aur `mongod` service chalu rakho
-   - **Cloud (aasan)**: MongoDB Atlas par free account banao (https://www.mongodb.com/cloud/atlas), free cluster banao, "Connect > Drivers" se connection string copy karo
+- **Dynamic tender builder**: company picks a category, gets suggested fields (e.g. Labour
+  category gets shift/wage/accommodation fields), can add fully custom fields and required
+  documents - stored per-tender in MongoDB (`Tender.fields`, `Tender.requiredDocuments`).
+- **Labour / Manpower Supply** is a first-class category with its own vendor profile fields
+  (`VendorProfile.labourDetails`) and its own bid fields (`Bid.availableLabourCategory`, etc).
+- **Real file uploads** via Multer - documents and previous-work photos are saved to
+  `backend/uploads/` and served at `/uploads/<filename>`. No cloud account needed for the POC.
+- **Previous work / experience** - vendors can add unlimited past tenders with photos and
+  documents (`VendorProfile.previousWork[]`).
+- **Document management** - named, categorized documents with expiry date and verification
+  status, not just plain URLs.
+- **Bids** replace the old "applications" - dynamic answers matching the tender's fields,
+  selectable profile documents + new uploads, a generated Bid ID, and a full status lifecycle
+  (submitted -> under_review -> shortlisted / rejected -> awarded, or withdrawn).
+- **Notifications** - simple in-app notifications on new bid / shortlist / reject / award.
+- **Admin** can now verify vendors, suspend/reactivate any company or vendor account, and
+  remove listings.
+- **Frontend** - full visual redesign: gradient hero, scroll animations, sidebar dashboards for
+  Company/Vendor, multi-step registration wizards, dynamic field rendering, toasts, modals.
+
+## What's intentionally still simple (roadmap, as discussed)
+
+- No in-app chat yet (Phase 1 is still direct phone contact) - Phase 2 item.
+- No payments/subscriptions - Phase 3 item.
+- File storage is local disk, fine for a POC/demo; production would move this to S3/Cloudinary.
+- No email/SMS - notifications are in-app only.
+- Company custom-field "table" field type is defined but not yet rendered in the bid form.
+
+---
+
+## 1. Prerequisites
+
+1. **Node.js** v18+ (your v25.2.1 works fine)
+2. **MongoDB** - local install or a free MongoDB Atlas cluster
 
 ## 2. Backend setup
 
@@ -23,85 +54,59 @@ npm install
 cp .env.example .env
 ```
 
-`.env` file kholo aur ye set karo:
-- `MONGO_URI` — agar local MongoDB hai to default value (`mongodb://127.0.0.1:27017/vendor_marketplace`) chalega. Agar Atlas use kar rahe ho to wahan ka connection string paste karo.
-- `JWT_SECRET` — koi bhi random long string daal do
-- `ADMIN_EMAIL` / `ADMIN_PASSWORD` — aapka admin login (server pehli baar start hote hi ye account apne aap ban jayega)
-
-Ab server chalao:
+Edit `.env`: set `MONGO_URI`, a random `JWT_SECRET`, and your `ADMIN_EMAIL`/`ADMIN_PASSWORD`.
 
 ```bash
 npm run dev
 ```
 
-Agar sab sahi hai to terminal me dikhega:
-```
-MongoDB connected: vendor_marketplace
-Admin account created: admin@yourcompany.com
-Server running on http://localhost:5000
-```
+You should see `MongoDB connected`, `Admin account created`, and `Server running on http://localhost:5000`.
 
-## 3. Frontend chalana
+## 3. Frontend
 
-Frontend sirf static files hain, koi build ki zaroorat nahi. Do tarike hain:
-
-**Option A — seedha double-click:**
-`frontend/index.html` file ko double-click karke browser me kholo.
-
-**Option B — local server se (recommended, kuch browsers file:// pe CORS issue dete hain):**
+Just open `frontend/index.html` in a browser, or serve it:
 ```bash
 cd frontend
 npx serve .
 ```
-Fir terminal me jo link dikhega (jaise `http://localhost:3000`) wo browser me kholo.
+Backend must be running on `http://localhost:5000` (see `frontend/js/api.js` -> `API_BASE`).
 
-> Backend hamesha `http://localhost:5000` par hi chalna chahiye — frontend usi address ko call karta hai (`frontend/js/api.js` me `API_BASE`).
+## 4. Demo flow
 
-## 4. Client ko demo kaise dikhayen
+1. **Home** - see the hero and (once data exists) latest vendors/tenders.
+2. **Vendor tab** -> Register (3-step wizard: account -> business info -> services). If you pick
+   "Labour / Manpower Supply", extra manpower fields appear automatically.
+3. In the vendor dashboard: add **Previous work** (with photo/document uploads) and
+   **Documents**, to raise your profile completion %.
+4. **Admin tab** -> log in with your `.env` credentials -> verify the new vendor.
+5. **Company tab** -> Register (3-step wizard) -> **Publish tender** (4-step wizard: basic info ->
+   category-suggested + custom fields -> required documents -> review) -> publish.
+6. **Vendor tab** -> **Open tenders** -> find the tender -> fill the dynamic bid form (fields
+   match exactly what the company asked for) -> select/upload documents -> submit.
+7. **Company tab** -> **My tenders** -> View bids -> Shortlist -> Award.
+8. **Guest tab** -> anyone can browse tenders and the vendor directory without logging in.
 
-1. Browser me site kholo — top par 4 tabs dikhenge: Company, Vendor, Guest, Admin
-2. **Company tab** → Register karo (naya company account) → requirement post karo (e.g. "Canteen vendor chahiye")
-3. **Vendor tab** → naye tab/window me ya same browser me → Register karo (vendor account) → profile banao (category select karo)
-4. **Admin tab** → `.env` me diya email/password se login karo → "Vendors pending verification" me naya vendor dikhega → Verify dabao
-5. Ab **Company tab** wapas jao → "Browse verified vendors" me wo vendor dikhega
-6. **Vendor tab** me wapas jao → "Open requirements" me company ki requirement dikhegi → Apply karo
-7. **Company tab** me → apni requirement ke "View applicants" me vendor dikhega → Approve dabao → phone number reveal ho jayega (Phase 1 contact flow)
-8. **Guest tab** → bina login kisi ne bhi vendors aur open requirements dekh sakte hain, koi action button nahi
-
-## 5. Ye POC me kya hai, kya nahi (client ko batane ke liye)
-
-**Included:**
-- 4 roles ka poora flow: register/login, post requirement, vendor profile, apply, approve, admin verify
-- Phase 1 contact: approve hone par phone number reveal hota hai
-- Category-wise filtering
-- Admin ke through fake/spam vendor ya requirement remove karna
-
-**Abhi included nahi (agle phases me add hoga, jaisa humne discuss kiya):**
-- Phase 2: platform ke andar chat (abhi sirf phone number)
-- Phase 3: subscription/payment system
-- Photo/document upload (abhi sirf text description — real upload ke liye cloud storage jaise AWS S3/Cloudinary integrate karna hoga)
-- Email/SMS notifications
-- Mobile app (abhi responsive website hai)
-
-## 6. Project structure
+## 5. Project structure
 
 ```
-vendor-marketplace-poc/
-├── backend/
-│   ├── src/
-│   │   ├── config/db.ts          MongoDB connection
-│   │   ├── models/                User, VendorProfile, Requirement, Application
-│   │   ├── middleware/auth.ts     JWT verification + role guard
-│   │   ├── controllers/           business logic
-│   │   ├── routes/                API endpoints
-│   │   ├── scripts/seedAdmin.ts   auto-creates admin account
-│   │   └── server.ts              entry point
-│   ├── package.json
-│   └── .env.example
-└── frontend/
-    ├── index.html
-    ├── css/style.css
-    └── js/
-        ├── api.js                 fetch wrapper
-        └── app.js                 all 4 tabs' logic
+backend/src/
+  config/categories.ts     category list + dynamic field templates (incl. labour)
+  config/db.ts              MongoDB connection
+  models/                   User, VendorProfile, Tender, Bid, Notification
+  middleware/auth.ts        JWT verification + role guard
+  middleware/upload.ts      Multer local file upload config
+  controllers/               business logic per feature
+  routes/                    API endpoints
+  utils/notify.ts            in-app notification helper
+  scripts/seedAdmin.ts       auto-creates the admin account
+  server.ts                  entry point, serves /uploads statically
+
+frontend/
+  index.html
+  css/style.css              full visual redesign + animations
+  js/
+    api.js, utils.js, state.js       shared helpers
+    auth-forms.js                     multi-step register/login + dynamic field renderer
+    home.js, guest.js, company.js, vendor.js, admin.js   one file per tab
+    app.js                            router / init
 ```

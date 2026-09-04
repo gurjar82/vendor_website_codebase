@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import path from "path";
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./config/db";
@@ -8,22 +9,33 @@ import { seedAdmin } from "./scripts/seedAdmin";
 
 import authRoutes from "./routes/authRoutes";
 import vendorRoutes from "./routes/vendorRoutes";
-import requirementRoutes from "./routes/requirementRoutes";
-import applicationRoutes from "./routes/applicationRoutes";
+import tenderRoutes from "./routes/tenderRoutes";
+import bidRoutes from "./routes/bidRoutes";
 import adminRoutes from "./routes/adminRoutes";
+import categoryRoutes from "./routes/categoryRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/vendors", vendorRoutes);
-app.use("/api/requirements", requirementRoutes);
-app.use("/api/applications", applicationRoutes);
+app.use("/api/tenders", tenderRoutes);
+app.use("/api/bids", bidRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/notifications", notificationRoutes);
+
+// multer / generic error handler - keeps file-upload errors as clean JSON instead of a stack trace
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error(err);
+  res.status(err.status || 500).json({ message: err.message || "Something went wrong" });
+});
 
 const PORT = process.env.PORT || 5000;
 

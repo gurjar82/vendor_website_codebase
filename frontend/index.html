@@ -3,15 +3,17 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Vendor Marketplace - POC</title>
+<title>Vendor Marketplace - Tender Platform</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/tabler-icons.min.css" />
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
 <header class="topbar">
-  <div class="brand">Vendor Marketplace <span class="poc-tag">POC</span></div>
+  <div class="brand"><span class="logo-mark">V</span> Vendor Marketplace <span class="poc-tag">Tender Platform</span></div>
   <nav class="tabs">
-    <button class="tab-btn active" data-tab="company">Company</button>
+    <button class="tab-btn active" data-tab="home">Home</button>
+    <button class="tab-btn" data-tab="company">Company</button>
     <button class="tab-btn" data-tab="vendor">Vendor</button>
     <button class="tab-btn" data-tab="guest">Guest</button>
     <button class="tab-btn" data-tab="admin">Admin</button>
@@ -21,6 +23,14 @@
 <main id="app"></main>
 
 <script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/state.js"></script>
+<script src="js/auth-forms.js"></script>
+<script src="js/home.js"></script>
+<script src="js/guest.js"></script>
+<script src="js/company.js"></script>
+<script src="js/vendor.js"></script>
+<script src="js/admin.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
