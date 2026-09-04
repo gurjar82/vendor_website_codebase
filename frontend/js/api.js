@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://vendor-website-codebase.onrender.com";
 
 async function apiRequest(path, { method = "GET", body, token, isForm = false } = {}) {
   const headers = {};
